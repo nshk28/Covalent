@@ -1,5 +1,4 @@
 # StrataFS
-# StrataFS
 
 StrataFS is a distributed cloud file storage and sharing platform (inspired by Google Drive) built with **Java and Spring Boot**. It combines scalable object storage, resumable chunked uploads, automated storage optimization, and policy-driven file sharing.
 
