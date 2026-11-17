@@ -114,31 +114,31 @@ flowchart TD
 ```mermaid
 classDiagram
     class UploadController {
-        +initiate(InitUploadRequest) UploadSessionResponse
-        +uploadChunk(uploadId, chunkNo, bytes, checksum) ChunkAck
-        +getStatus(uploadId) UploadStatusResponse
-        +complete(uploadId) FileResponse
-        +abort(uploadId) void
+        +initiate(request)
+        +uploadChunk(uploadId, chunkNo, bytes, checksum)
+        +getStatus(uploadId)
+        +complete(uploadId)
+        +abort(uploadId)
     }
     class UploadService {
-        +initiate(req) UploadSession
-        +acceptChunk(uploadId, chunkNo, data, checksum) ChunkAck
-        +getMissingChunks(uploadId) List~Integer~
-        +finalizeUpload(uploadId) FileMetadata
+        +initiate(request)
+        +acceptChunk(uploadId, chunkNo, data, checksum)
+        +getMissingChunks(uploadId)
+        +finalizeUpload(uploadId)
     }
     class ChecksumVerifier {
-        +sha256(bytes) String
-        +verify(bytes, expected) boolean
+        +sha256(bytes)
+        +verify(bytes, expected)
     }
     class StorageProvider {
         <<interface>>
-        +initMultipart(key) String
-        +uploadPart(key, uploadToken, partNo, data) String
-        +completeMultipart(key, uploadToken, parts) void
-        +abortMultipart(key, uploadToken) void
-        +openStream(key) InputStream
-        +changeTier(key, tier) void
-        +delete(key) void
+        +initMultipart(key)
+        +uploadPart(key, token, partNo, data)
+        +completeMultipart(key, token, parts)
+        +abortMultipart(key, token)
+        +openStream(key)
+        +changeTier(key, tier)
+        +delete(key)
     }
     class S3StorageProvider
     class UploadSession {
@@ -148,7 +148,7 @@ classDiagram
         +long size
         +String fileHash
         +int totalChunks
-        +UploadStatus status
+        +String status
         +Instant expiresAt
     }
     class UploadChunk {
@@ -158,90 +158,22 @@ classDiagram
         +String partEtag
     }
     class UploadSweeper {
-        +sweepStaleSessions() void
-    }
-
-    class ShareController {
-        +createLink(CreateShareRequest) ShareLinkResponse
-        +download(token) Stream
-        +revoke(linkId) void
-        +verifyRecipient(token, email, otp) void
-    }
-    class ShareService {
-        +create(fileId, policy) ShareLink
-        +validateAndConsume(token, recipient) FileMetadata
-        +revoke(linkId) void
-    }
-    class SharePolicyEvaluator {
-        <<interface>>
-        +evaluate(link, ctx) PolicyResult
-    }
-    class ExpiryPolicy
-    class DownloadLimitPolicy
-    class RecipientPolicy
-    class ShareLink {
-        +UUID id
-        +UUID fileId
-        +String tokenHash
-        +Instant expiresAt
-        +Integer maxDownloads
-        +int downloadCount
-        +Set~String~ allowedEmails
-        +ShareStatus status
-    }
-    class ShareExpiryScheduler {
-        +revokeExpiredLinks() void
-    }
-
-    class OptimizerService {
-        +findDuplicates() List~DuplicateGroup~
-        +recommendArchival(days) List~ArchiveRecommendation~
-        +detectAbandoned() List~AbandonedItem~
-        +reclaim(items) ReclaimReport
+        +sweepStaleSessions()
     }
     class DedupService {
-        +registerBlob(hash, size, key) Blob
-        +incrementRef(hash) void
-        +decrementRef(hash) void
-    }
-    class FileMetadata {
-        +UUID id
-        +UUID ownerId
-        +UUID folderId
-        +String name
-        +String blobHash
-        +Instant lastAccessedAt
-        +StorageTier tier
-    }
-    class Blob {
-        +String hash
-        +String storageKey
-        +long size
-        +int refCount
+        +registerBlob(hash, size, key)
+        +incrementRef(hash)
+        +decrementRef(hash)
     }
 
     UploadController --> UploadService
     UploadService --> ChecksumVerifier
     UploadService --> StorageProvider
+    UploadService --> DedupService
     UploadService --> UploadSession
-    UploadSession "1" --> "*" UploadChunk
+    UploadSession --> UploadChunk
     S3StorageProvider ..|> StorageProvider
     UploadSweeper --> UploadService
-    UploadService --> DedupService
-
-    ShareController --> ShareService
-    ShareService --> SharePolicyEvaluator
-    ExpiryPolicy ..|> SharePolicyEvaluator
-    DownloadLimitPolicy ..|> SharePolicyEvaluator
-    RecipientPolicy ..|> SharePolicyEvaluator
-    ShareService --> ShareLink
-    ShareExpiryScheduler --> ShareService
-
-    OptimizerService --> DedupService
-    OptimizerService --> StorageProvider
-    DedupService --> Blob
-    FileMetadata --> Blob
-    ShareLink --> FileMetadata
 ```
 
 ### Resumable Upload Sequence
