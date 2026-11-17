@@ -1,6 +1,6 @@
-# StrataFS
+# Covalent
 
-StrataFS is a distributed cloud file storage and sharing platform (inspired by Google Drive) built with **Java and Spring Boot**. It combines scalable object storage, resumable chunked uploads, automated storage optimization, and policy-driven file sharing.
+Covalent is a distributed cloud file storage and sharing platform (inspired by Google Drive) built with **Java and Spring Boot**. It combines scalable object storage, resumable chunked uploads, automated storage optimization, and policy-driven file sharing.
 
 The platform is designed to accept large files reliably over unstable networks, deduplicate and tier stored data to cut cost, and share files through temporary links that enforce their own rules and revoke themselves automatically.
 
